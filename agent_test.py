@@ -24,7 +24,7 @@ class IsolationTest(unittest.TestCase):
     def setUp(self):
         reload(game_agent)
         self.player1 = game_agent.MinimaxPlayer(score_fn=sample_players.open_move_score)
-        self.player2 = game_agent.MinimaxPlayer(score_fn=sample_players.open_move_score)
+        self.player2 = game_agent.AlphaBetaPlayer(score_fn=sample_players.open_move_score)
         self.game = isolation.Board(self.player1, self.player2)
 
     def test_basic(self):

@@ -311,7 +311,7 @@ class AlphaBetaPlayer(IsolationPlayer):
                         best_score = sc
                     return result
         except SearchTimeout:
-            pass  # Handle any actions required after timeout as needed
+            return best_move
         finally:
             # Return the best move from the last completed search iteration
             return best_move
@@ -358,19 +358,22 @@ class AlphaBetaPlayer(IsolationPlayer):
         legals = game.get_legal_moves()
         if len(legals) == 0:
             return (-1, -1)  # ruh roh
-        myvalues = [self.min_value(game.forecast_move(move), 1, depth) for move in legals]
+        myvalues = [self.min_value(game.forecast_move(move), 1, depth, alpha, beta) for move in legals]
         if len(myvalues) == 0:
             return (-1, -1)  # ruh roh
             #     print ("Max>", myvalues)
         mymaxv = max(myvalues)
         mymaxi = myvalues.index(mymaxv)
+        print ("AB ret:", legals, legals[mymaxi])
         return legals[mymaxi]
 
-    def max_value(self, game, mydepth, maxdepth, alef, bet):
+    def max_value(self, game, mydepth, maxdepth, alpha, beta):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        if mydepth >= maxdepth:
+        print ("Max: ", mydepth, maxdepth, alpha, beta)
+
+        if mydepth > maxdepth:
             return self.score(game, self)
 
         v = -1
@@ -378,17 +381,19 @@ class AlphaBetaPlayer(IsolationPlayer):
         if len(legals) == 0:
             return -1
         for move in legals:
-            v = max( v, self.min_value(game.forecast_move(move), mydepth + 1, maxdepth, alef, bet))
-            if v >= bet:
+            v = max( v, self.min_value(game.forecast_move(move), mydepth + 1, maxdepth, alpha, beta))
+            if v >= beta:
                 return v
-            alef = max(alef, v)
+            alpha = max(alpha, v)
         return v
 
-    def min_value(self, game, mydepth, maxdepth, alef, bet):
+    def min_value(self, game, mydepth, maxdepth, alpha, beta):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        if mydepth >= maxdepth:
+        print ("Min: ", mydepth, maxdepth, alpha, beta)
+
+        if mydepth > maxdepth:
             return self.score(game, self)
 
         v = 999
@@ -397,8 +402,8 @@ class AlphaBetaPlayer(IsolationPlayer):
             return 999
 
         for move in legals:
-            v = min(v, self.max_value(game.forecast_move(move), mydepth + 1, maxdepth, alef, bet))
-            if v <= alef:
+            v = min(v, self.max_value(game.forecast_move(move), mydepth + 1, maxdepth, alpha, beta))
+            if v <= alpha:
                 return v
-            bet = min(bet, v)
+            beta = min(beta, v)
         return v
